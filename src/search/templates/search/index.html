@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multimedia Hybrid Search</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --accent-color: #6366f1;
+            --text-color: #f8fafc;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                              radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+                              radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .upload-zone {
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--accent-color);
+            background: rgba(99, 102, 241, 0.1);
+        }
+        .upload-input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .btn-check:checked + .btn-outline-light {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px var(--accent-color);
+        }
+
+        .result-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            transition: transform 0.3s ease;
+            aspect-ratio: 4/3;
+        }
+        .result-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+        .result-card:hover img {
+            transform: scale(1.1);
+        }
+        
+        .score-badge {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.75);
+            color: #ffffff;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+        }
+        .section-title {
+            border-left: 4px solid var(--accent-color);
+            padding-left: 15px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .preview-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .placeholder-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .active-image {
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <header class="text-center mb-5">
+        <h1 class="display-4 fw-bold"><span style="color: var(--accent-color);">AI</span> Hybrid Search</h1>
+        <p class="lead text-secondary">Hệ thống truy vấn đa phương tiện thông minh</p>
+    </header>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="glass-card p-4 h-100">
+                <h5 class="section-title">1. Ảnh Truy Vấn</h5>
+                
+                <form action="{% url 'search:result' %}" method="POST" enctype="multipart/form-data" id="searchForm">
+                    {% csrf_token %}
+                    
+                    <input type="hidden" name="current_image_path" id="currentImagePath" value="{{ query_url|default:'' }}">
+
+                    <div class="upload-zone p-4 text-center mb-4 d-flex align-items-center justify-content-center" style="min-height: 250px;">
+                        
+                        <div class="preview-container">
+                            <img id="imagePreview" src="{{ query_url }}" 
+                                 class="active-image {% if not query_url %}d-none{% endif %}">
+                            
+                            <div id="placeholder" class="placeholder-content {% if query_url %}d-none{% endif %}">
+                                <i class="fas fa-cloud-upload-alt fa-3x mb-3 text-secondary"></i>
+                                <p class="mb-0 text-secondary">Kéo thả ảnh hoặc click để chọn</p>
+                            </div>
+                        </div>
+
+                        <input type="file" name="query_img" id="fileInput" class="upload-input" accept="image/*">
+                    </div>
+
+                    <h5 class="section-title">2. Thuật toán</h5>
+                    
+                    <div class="d-grid gap-2 mb-4">
+                        <input type="radio" class="btn-check" name="search_method" id="semantic" value="semantic" {% if selected_method == 'semantic' or not selected_method %}checked{% endif %}>
+                        <label class="btn btn-outline-light text-start" for="semantic">
+                            <i class="fas fa-brain me-2"></i> Ngữ nghĩa (ResNet50 AI)
+                            <small class="d-block text-secondary" style="font-size: 0.7em;">Tìm theo nội dung & vật thể</small>
+                        </label>
+
+                        <input type="radio" class="btn-check" name="search_method" id="color" value="color" {% if selected_method == 'color' %}checked{% endif %}>
+                        <label class="btn btn-outline-light text-start" for="color">
+                            <i class="fas fa-palette me-2"></i> Màu sắc (Color Hist)
+                            <small class="d-block text-secondary" style="font-size: 0.7em;">Tìm theo phân bố màu</small>
+                        </label>
+
+                        <input type="radio" class="btn-check" name="search_method" id="shape" value="shape" {% if selected_method == 'shape' %}checked{% endif %}>
+                        <label class="btn btn-outline-light text-start" for="shape">
+                            <i class="fas fa-shapes me-2"></i> Hình dáng (HOG)
+                            <small class="d-block text-secondary" style="font-size: 0.7em;">Tìm theo biên dạng</small>
+                        </label>
+
+                        <input type="radio" class="btn-check" name="search_method" id="texture" value="texture" {% if selected_method == 'texture' %}checked{% endif %}>
+                        <label class="btn btn-outline-light text-start" for="texture">
+                            <i class="fas fa-layer-group me-2"></i> Kết cấu (LBP)
+                            <small class="d-block text-secondary" style="font-size: 0.7em;">Tìm theo họa tiết bề mặt</small>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold" style="background: var(--accent-color); border: none;">
+                        <i class="fas fa-search me-2"></i> TÌM KIẾM NGAY
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="glass-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="section-title mb-0">3. Kết quả (Top 15)</h5>
+                    <span class="badge bg-secondary">Total: {{ results|length }}</span>
+                </div>
+
+                {% if results %}
+                    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-3 g-3">
+                        {% for img_obj, score in results %}
+                        <div class="col">
+                            <div class="result-card">
+                                <img src="{{ img_obj.image_file.url }}" alt="{{ img_obj.filename }}" loading="lazy">
+                                
+                                <div class="score-badge">
+                                    {% if score > 0.85 %}
+                                        <i class="fas fa-check-circle text-success me-1"></i>
+                                    {% endif %}
+                                    Match: {% widthratio score 1 100 %}%
+                                </div>
+                                
+                            </div>
+                            <div class="mt-2 text-center d-flex justify-content-between px-2">
+                                <small class="text-secondary text-truncate" style="max-width: 100px;">
+                                    {{ img_obj.filename }}
+                                </small>
+                                <div class="progress" style="width: 50px; height: 4px; margin-top: 8px;">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: {% widthratio score 1 100 %}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5 text-secondary">
+                        <i class="fas fa-images fa-4x mb-3" style="opacity: 0.3;"></i>
+                        <p>Kết quả tìm kiếm sẽ hiển thị tại đây</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Xử lý sự kiện Upload Ảnh để Preview mượt mà
+    document.getElementById('fileInput').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                // 1. Hiển thị ảnh vừa chọn
+                const imgPreview = document.getElementById('imagePreview');
+                const placeholder = document.getElementById('placeholder');
+                
+                imgPreview.src = e.target.result;
+                imgPreview.classList.remove('d-none');
+                placeholder.classList.add('d-none');
+
+                // 2. Xóa giá trị của input hidden (vì giờ đã có ảnh mới)
+                // Để server biết ưu tiên ảnh mới upload
+                document.getElementById('currentImagePath').value = '';
+            }
+            
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+
+</body>
+</html>

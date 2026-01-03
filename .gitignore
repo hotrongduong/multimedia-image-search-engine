@@ -1,115 +1,38 @@
-# Byte-compiled / optimized / DLL files
+# --- 1. Python & System Junk ---
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
-*.so
-
-# Distribution / packaging
-.Python
-build/
-dist/
-*.egg-info/
-pip-wheel-metadata/
-
-# Virtual environments
-venv/
-env/
-ENV/
-.venv/
-venv.bak/
-
-# Django
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-/media/
-staticfiles/
-static/
-
-# Ignore data folder (dataset files)
-data/
-# or to be explicit:
-# /data/
-
-# Testing, coverage, caches
-.coverage
-htmlcov/
-.pytest_cache/
-nosetests.xml
-coverage.xml
-.hypothesis/
-
-# IDEs and editor configs
-.vscode/
-.idea/
-*.sublime-project
-*.sublime-workspace
-
-# OS files
 .DS_Store
 Thumbs.db
 
-# Docker / env files
-.env
-docker-compose.override.yml
-```// filepath: /mnt/d/MultiMediaDBMS/multimedia-hybrid-search/.gitignore
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# C extensions
-*.so
-
-# Distribution / packaging
-.Python
-build/
-dist/
-*.egg-info/
-pip-wheel-metadata/
-
-# Virtual environments
-venv/
-env/
-ENV/
-.venv/
-venv.bak/
-
-# Django
+# --- 2. Django Stuff ---
+*.sqlite3
 *.log
 local_settings.py
 db.sqlite3
-db.sqlite3-journal
-/media/
-staticfiles/
-static/
+/static_root/
+/staticfiles/
 
-# Ignore data folder (dataset files)
-data/
-# or to be explicit:
-# /data/
+# --- 3. Môi trường ảo (Virtual Env) ---
+venv/
+env/
+.env
+.venv
 
-# Testing, coverage, caches
-.coverage
-htmlcov/
-.pytest_cache/
-nosetests.xml
-coverage.xml
-.hypothesis/
-
-# IDEs and editor configs
+# --- 4. IDE (Cấu hình Editor) ---
 .vscode/
 .idea/
-*.sublime-project
-*.sublime-workspace
 
-# OS files
-.DS_Store
-Thumbs.db
+# --- 5. Dữ liệu Media (Ảnh upload & Ảnh dataset) ---
+# Quan trọng: Không commit ảnh người dùng upload hoặc dataset nặng
+media/
+src/media/
 
-# Docker / env files
-.env
-docker-compose.override.yml
+# --- 6. Docker & Database ---
+# Bỏ qua dữ liệu database map ra ngoài (nếu có)
+postgres_data/
+.docker_volumes/
+
+# --- 7. THEO YÊU CẦU CỦA BẠN ---
+# Bỏ qua thư mục chứa dữ liệu thô
+data/

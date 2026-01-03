@@ -1,7 +1,9 @@
 from django.urls import path
 from . import views
 
+app_name = 'search'
+
 urlpatterns = [
     path('', views.index, name='index'),
-    path('history/', views.history, name='history'),
+    path('result/', views.search_handler, name='result'),
 ]

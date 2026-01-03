@@ -1,34 +1,35 @@
 services:
   db:
-    image: postgres:15
+    image: pgvector/pgvector:pg16
+    container_name: cbir_db_container
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
+    restart: always
 
   web:
     build: .
+    container_name: cbir_web_container
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - ./src:/app/src
-      - ./data/Corel-5k:/app/media/corel5k
+      - .:/app
+      - ./media:/app/src/media
+      - ./data:/app/data
     ports:
       - "8000:8000"
+    depends_on:
+      - db
     environment:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
-      - DB_HOST=db
+      - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
-      - SECRET_KEY=${SECRET_KEY}
-      - DEBUG=${DEBUG}
-      - MEDIA_ROOT=/media/
-    depends_on:
-      - db
 
 volumes:
   postgres_data:

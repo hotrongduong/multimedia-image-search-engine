@@ -1,7 +1,9 @@
-Django==5.0
-psycopg2-binary>=2.9
-python-dotenv>=1.0
-numpy
-opencv-python-headless
-scikit-image
-scipy
+Django>=5.0
+psycopg2-binary>=2.9      # Driver kết nối PostgreSQL
+pgvector>=0.2             # Thư viện kết nối vector DB
+Pillow>=10.0              # Xử lý ảnh cơ bản
+numpy>=1.26               # Tính toán ma trận (TV1, TV2 cần)
+scikit-image>=0.22        # HOG, LBP (TV2, TV3 cần)
+opencv-python-headless>=4.8 # Xử lý ảnh (bản headless nhẹ cho server)
+tensorflow>=2.15          # Deep Learning ResNet50 (TV4 cần)
+python-dotenv>=1.0        # Đọc file .env
